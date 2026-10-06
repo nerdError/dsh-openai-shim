@@ -52,7 +52,7 @@ def build_parser() -> argparse.ArgumentParser:
                         "Falls back to $DSH_SHIM_UPSTREAM.")
     s.add_argument("--host", default=_env("DSH_SHIM_HOST", "127.0.0.1"))
     s.add_argument("--port", type=int, default=_env("DSH_SHIM_PORT", 8090))
-    s.add_argument("--effort-mode", choices=["map", "drop", "off"],
+    s.add_argument("--effort-mode", choices=["map", "drop", "off", "low", "none"],
                    default=_env("DSH_SHIM_EFFORT_MODE", "map"))
     s.add_argument("--token-cap", type=int, default=_env("DSH_SHIM_TOKEN_CAP", 100000),
                    help="clamp completion max_tokens to this (0 = off)")
@@ -61,7 +61,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.set_defaults(func=_cmd_serve)
 
     r = sub.add_parser("rewrite", help="apply rewrites to a JSON request body (stdin -> stdout)")
-    r.add_argument("--effort-mode", choices=["map", "drop", "off"], default="map")
+    r.add_argument("--effort-mode", choices=["map", "drop", "off", "low", "none"], default="map")
     r.add_argument("--token-cap", type=int, default=100000)
     r.set_defaults(func=_cmd_rewrite)
 

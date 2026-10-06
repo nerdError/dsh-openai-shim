@@ -48,7 +48,7 @@ class ShimConfig:
         upstream: str,
         listen_host: str = "127.0.0.1",
         listen_port: int = 8090,
-        effort_mode: str = "map",          # "map" | "drop" | "off"
+        effort_mode: str = "map",          # "map" | "drop" | "off" | "low" | "none"
         effort_map: Optional[dict[str, str]] = None,
         token_cap: int = 100000,          # clamp completion max_tokens to this
         context_window: int = 0,         # upstream max_model_len (input+output); 0 = unknown
@@ -59,8 +59,8 @@ class ShimConfig:
         self.upstream = upstream.rstrip("/")
         self.listen_host = listen_host
         self.listen_port = int(listen_port)
-        if effort_mode not in ("map", "drop", "off"):
-            raise ValueError(f"effort_mode must be map|drop|off, got {effort_mode!r}")
+        if effort_mode not in ("map", "drop", "off", "low", "none"):
+            raise ValueError(f"effort_mode must be map|drop|off|low|none, got {effort_mode!r}")
         self.effort_mode = effort_mode
         self.effort_map = dict(effort_map or self.DEFAULT_EFFORT_MAP)
         self.token_cap = int(token_cap)
@@ -118,6 +118,14 @@ def apply_rewrites(body: Optional[bytes], cfg: ShimConfig,
         if cfg.effort_mode == "drop":
             del data["reasoning_effort"]
             changes.append(f"dropped reasoning_effort={val!r}")
+        elif cfg.effort_mode == "low":
+            new = "low"
+            data["reasoning_effort"] = new
+            changes.append(f"!!!! reasoning_effort {val!r}->{new!r}")
+        elif cfg.effort_mode == "none":
+            new = "none"
+            data["reasoning_effort"] = new
+            changes.append(f"!!!! reasoning_effort {val!r}->{new!r}")
         else:
             new = cfg.effort_map.get(str(val))
             if new is not None and new != val:
